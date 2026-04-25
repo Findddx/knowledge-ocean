@@ -1,0 +1,38 @@
+# Local dialogue and personal planning material
+chat_resume*.md
+Learning_Program.md
+deep_thinking_reference.md
+
+# Operational logs, sync manifests, staging drafts, and upgrade archives
+**/*sync_manifest*.md
+**/*_sync_*.md
+**/*upgrade_log*.md
+**/*deepening*.md
+**/*stage_round*.md
+hubs/os_hardware_sync_*.md
+hubs/hardware/hardware_hub.md
+
+# Workspace-local Feishu/Notion navigation and personal-focus files
+ai_knowledge_os/00_system/feishu_homepage.md
+ai_knowledge_os/01_maps/personal_focus_map.md
+
+# Temporary parsing, generated drafts, and tool output
+tmp/
+temp/
+.tmp/
+mineru_outputs/
+mineru_output/
+downloads/
+*.zip
+*.tmp
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Dependency/build caches
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/

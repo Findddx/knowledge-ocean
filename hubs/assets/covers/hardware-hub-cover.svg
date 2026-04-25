@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Hardware Hub abstract cover</title>
+  <desc id="desc">Abstract server platform topology with CPU package, memory channels, PCIe lanes, accelerator geometry, storage backplane, airflow and power paths.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f4f1ea"/>
+      <stop offset="0.58" stop-color="#e8e3d8"/>
+      <stop offset="1" stop-color="#d9d0c0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#111315" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g opacity="0.18" stroke="#8a9299" stroke-width="2">
+    <path d="M120 180h1360M120 450h1360M120 720h1360"/>
+    <path d="M250 96v708M520 96v708M800 96v708M1080 96v708M1350 96v708"/>
+  </g>
+
+  <g filter="url(#shadow)" transform="translate(190 110)">
+    <rect x="0" y="0" width="1220" height="680" rx="28" fill="#191c1f"/>
+    <rect x="34" y="34" width="1152" height="612" rx="18" fill="#22262a" stroke="#8a9299" stroke-opacity="0.28"/>
+
+    <g transform="translate(452 262)">
+      <rect x="-112" y="-112" width="224" height="224" rx="22" fill="#d0a24a"/>
+      <rect x="-76" y="-76" width="152" height="152" rx="14" fill="#2b2f31"/>
+      <g stroke="#191c1f" stroke-width="5">
+        <path d="M-132-80h-72M-132-40h-72M-132 0h-72M-132 40h-72M-132 80h-72"/>
+        <path d="M132-80h72M132-40h72M132 0h72M132 40h72M132 80h72"/>
+        <path d="M-80-132v-72M-40-132v-72M0-132v-72M40-132v-72M80-132v-72"/>
+        <path d="M-80 132v72M-40 132v72M0 132v72M40 132v72M80 132v72"/>
+      </g>
+    </g>
+
+    <g fill="#b7c0c7">
+      <rect x="112" y="122" width="66" height="376" rx="8"/>
+      <rect x="198" y="122" width="66" height="376" rx="8"/>
+      <rect x="284" y="122" width="66" height="376" rx="8"/>
+      <rect x="814" y="128" width="302" height="70" rx="10"/>
+      <rect x="814" y="226" width="302" height="70" rx="10"/>
+      <rect x="814" y="324" width="302" height="70" rx="10"/>
+      <rect x="814" y="422" width="302" height="70" rx="10"/>
+    </g>
+
+    <g stroke="#2f8f83" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.9">
+      <path d="M570 260h196"/>
+      <path d="M570 300h196"/>
+      <path d="M570 340h196"/>
+      <path d="M520 420c120 96 252 134 396 132"/>
+    </g>
+
+    <g fill="#4d7ea8">
+      <rect x="512" y="84" width="214" height="72" rx="12"/>
+      <rect x="512" y="520" width="214" height="72" rx="12"/>
+    </g>
+    <g fill="#b56b45">
+      <rect x="92" y="548" width="460" height="40" rx="8"/>
+      <rect x="92" y="602" width="460" height="40" rx="8"/>
+    </g>
+
+    <g stroke="#e8e3d8" stroke-width="2" opacity="0.32">
+      <path d="M80 68c220 54 450 54 690 0"/>
+      <path d="M80 636c240-48 476-50 708-6"/>
+      <path d="M1134 76c-40 180-40 358 0 536"/>
+    </g>
+  </g>
+</svg>

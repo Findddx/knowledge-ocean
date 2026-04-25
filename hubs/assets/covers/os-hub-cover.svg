@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">OS Hub abstract cover</title>
+  <desc id="desc">Abstract operating system layers with kernel boundary, scheduling paths, memory pages, file I/O and observability traces.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#101315"/>
+      <stop offset="0.56" stop-color="#191c1f"/>
+      <stop offset="1" stop-color="#26251f"/>
+    </linearGradient>
+    <radialGradient id="warm" cx="54%" cy="46%" r="52%">
+      <stop offset="0" stop-color="#d0a24a" stop-opacity="0.42"/>
+      <stop offset="0.36" stop-color="#2f8f83" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#111315" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#warm)"/>
+
+  <g opacity="0.28" stroke="#8a9299" stroke-width="2" fill="none">
+    <path d="M160 174h1280"/>
+    <path d="M160 726h1280"/>
+    <path d="M248 104v692"/>
+    <path d="M1352 104v692"/>
+    <path d="M160 450h1280"/>
+  </g>
+
+  <g transform="translate(800 450)">
+    <circle r="168" fill="#191c1f" stroke="#d0a24a" stroke-width="3"/>
+    <circle r="220" fill="none" stroke="#2f8f83" stroke-width="2" opacity="0.68"/>
+    <circle r="304" fill="none" stroke="#b7c0c7" stroke-width="1.5" opacity="0.34"/>
+    <circle r="392" fill="none" stroke="#b56b45" stroke-width="1.5" opacity="0.32"/>
+    <circle r="482" fill="none" stroke="#8a9299" stroke-width="1" opacity="0.22"/>
+
+    <g fill="#f4f1ea" opacity="0.88">
+      <rect x="-78" y="-78" width="156" height="156" rx="18"/>
+    </g>
+    <g stroke="#101315" stroke-width="6" opacity="0.75">
+      <path d="M-48-22h96M-48 0h96M-48 22h96"/>
+      <path d="M-22-48v96M0-48v96M22-48v96"/>
+    </g>
+
+    <g stroke-linecap="round" stroke-width="4" fill="none">
+      <path d="M-168-8c-150-28-286-88-404-180" stroke="#4d7ea8"/>
+      <path d="M-156 56c-154 58-306 90-458 98" stroke="#2f8f83"/>
+      <path d="M166-34c126-78 264-112 414-122" stroke="#d0a24a"/>
+      <path d="M150 68c158 18 292 72 404 164" stroke="#b56b45"/>
+    </g>
+
+    <g fill="#e8e3d8">
+      <rect x="-640" y="-242" width="118" height="52" rx="8" opacity="0.76"/>
+      <rect x="-692" y="126" width="150" height="52" rx="8" opacity="0.72"/>
+      <rect x="518" y="-178" width="154" height="52" rx="8" opacity="0.76"/>
+      <rect x="508" y="196" width="138" height="52" rx="8" opacity="0.70"/>
+    </g>
+
+    <g opacity="0.32" filter="url(#soft)">
+      <ellipse cx="-520" cy="-250" rx="84" ry="18" fill="#4d7ea8"/>
+      <ellipse cx="590" cy="-188" rx="92" ry="20" fill="#d0a24a"/>
+      <ellipse cx="-618" cy="154" rx="96" ry="22" fill="#2f8f83"/>
+      <ellipse cx="580" cy="222" rx="90" ry="20" fill="#b56b45"/>
+    </g>
+  </g>
+</svg>
