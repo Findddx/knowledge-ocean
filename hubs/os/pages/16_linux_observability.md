@@ -13,6 +13,10 @@
 
 先确认现象和边界，再选工具。很多问题不需要一上来 profiler；权限、路径、环境、cgroup 限制、systemd sandbox 先排掉，效率更高。
 
+![Linux 可观测性与 eBPF 视觉图](../../assets/images/os/16_linux_observability/generated-ebpf-observability.png)
+
+> 图：从低扰动状态观察到 eBPF 采样的抽象视觉层次。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 ## 机制拆解
 
 | 观察面 | 问什么 | 工具 |

@@ -32,6 +32,10 @@ flowchart TD
 
 把加速器平台拆成三个通信域会更清楚：
 
+![GPU scale-up / scale-out / feeding 视觉图](../../assets/images/hardware/13_gpu_accelerator_platform/generated-gpu-scaleup-scaleout.png)
+
+> 图：GPU 本地互连域、RDMA scale-out rail 和数据 feeding/checkpoint 路径的抽象关系。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 | 域 | 典型技术 | 主要问题 |
 | --- | --- | --- |
 | scale-up | NVLink、NVSwitch、PCIe P2P、NVLink-C2C | 单节点/单机架内 GPU 是否像一个大计算池 |

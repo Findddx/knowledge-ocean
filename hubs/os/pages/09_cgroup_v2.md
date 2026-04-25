@@ -11,6 +11,10 @@
 
 cgroup v2 不是“给进程打标签”，而是把任务组织进一棵层级树，并在树上分配、限制、统计 CPU、memory、IO、pids 等资源。
 
+![cgroup v2 内存压力与 OOM 视觉图](../../assets/images/os/09_cgroup_v2/generated-cgroup-v2-memory-pressure.png)
+
+> 图：把 cgroup 层级、内存页、压力阈值和 OOM 决策抽象成资源流。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 三个关键点：
 
 - 控制对象是一组任务，不是进程名。

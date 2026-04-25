@@ -15,6 +15,10 @@
 
 ## 核心直觉
 
+![Cyber Recovery Vault 与 Clean Room 视觉图](../../assets/images/hardware/35_cyber_recovery_vault_clean_room/generated-cyber-recovery-vault.png)
+
+> 图：生产域、不可变备份、隔离 vault、验证隔离区和 clean room 的抽象恢复路径。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 ```mermaid
 flowchart TD
   A[Production] --> B[Backup domain]

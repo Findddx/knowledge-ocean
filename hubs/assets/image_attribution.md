@@ -77,6 +77,120 @@
 - Approval status: inserted
 - Notes: Prompt specified an abstract non-branded server-board topology with graphite, warm white, brushed steel, muted teal, copper and amber accents; no neon, no fake model numbers, no text.
 
+## generated-cgroup-v2-memory-pressure
+
+- Local file: `hubs/assets/images/os/09_cgroup_v2/generated-cgroup-v2-memory-pressure.png`
+- Original title: cgroup v2 memory pressure generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: OS Hub / `09_cgroup_v2`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes nested cgroups, memory pages, pressure gates, reclaim and OOM boundary in a restrained technical style.
+
+## generated-virtual-memory-page-cache
+
+- Local file: `hubs/assets/images/os/14_virtual_memory_mmap_page_cache/generated-virtual-memory-page-cache.png`
+- Original title: virtual memory mmap page cache generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: OS Hub / `14_virtual_memory_mmap_page_cache`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes process address-space layers, page-table mapping, physical pages and page cache as abstract technical forms.
+
+## generated-ebpf-observability
+
+- Local file: `hubs/assets/images/os/16_linux_observability/generated-ebpf-observability.png`
+- Original title: Linux observability eBPF generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: OS Hub / `16_linux_observability`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes OS layers, probes and low-disturbance telemetry convergence without using fake dashboards or labels.
+
+## generated-pcie-cxl-topology
+
+- Local file: `hubs/assets/images/hardware/12_pcie_cxl_interconnect/generated-pcie-cxl-topology.png`
+- Original title: PCIe CXL topology generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: Hardware Hub / `12_pcie_cxl_interconnect`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, model numbers, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes CPU root complexes, PCIe switches, retimers, accelerator/NIC/NVMe paths and CXL memory expansion.
+
+## generated-gpu-scaleup-scaleout
+
+- Local file: `hubs/assets/images/hardware/13_gpu_accelerator_platform/generated-gpu-scaleup-scaleout.png`
+- Original title: GPU scale-up scale-out generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: Hardware Hub / `13_gpu_accelerator_platform`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, model numbers, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes local GPU interconnect, RDMA scale-out rails and data feeding/checkpoint paths as an abstract platform map.
+
+## generated-cyber-recovery-vault
+
+- Local file: `hubs/assets/images/hardware/35_cyber_recovery_vault_clean_room/generated-cyber-recovery-vault.png`
+- Original title: cyber recovery vault clean room generated chapter visual
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: Hardware Hub / `35_cyber_recovery_vault_clean_room`
+- Intended use: inline chapter visual
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Visualizes production, immutable backup, isolated vault, validation chamber and clean-room recovery as separate trust zones.
+
 ## wikimedia-pci-express-slot
 
 - Local file: `hubs/assets/images/hardware/12_pcie_cxl_interconnect/wikimedia-pci-express-slot.png`

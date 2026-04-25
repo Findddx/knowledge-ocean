@@ -19,6 +19,10 @@ PCIe 和 CXL 是现代服务器里 CPU、GPU、NIC、NVMe、DPU、FPGA 和内存
 
 > 图：PCIe x16、x1 与传统 PCI 插槽对比。图片来源与许可见 [image_attribution.md](../../assets/image_attribution.md)。
 
+![PCIe 与 CXL 拓扑视觉图](../../assets/images/hardware/12_pcie_cxl_interconnect/generated-pcie-cxl-topology.png)
+
+> 图：CPU root complex、PCIe switch、retimer、GPU/NIC/NVMe 与 CXL memory 的抽象拓扑。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 - 上游来自哪个 CPU/root complex。
 - 链路训练到哪一代、几条 lane。
 - 是否经过 switch、retimer、riser、线缆或背板。

@@ -13,6 +13,10 @@
 
 `mmap` 和 page cache 是文件、内存、IO 的桥。`mmap` 不一定立即读文件；访问映射区时可能触发 page fault，内核再把数据通过文件系统和 page cache 带入内存。
 
+![虚拟内存、mmap 与 page cache 视觉图](../../assets/images/os/14_virtual_memory_mmap_page_cache/generated-virtual-memory-page-cache.png)
+
+> 图：虚拟地址层、页表映射、物理页和 page cache 的抽象关系。图片来源与生成说明见 [image_attribution.md](../../assets/image_attribution.md)。
+
 ## 机制拆解
 
 ### 三条路径
