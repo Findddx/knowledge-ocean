@@ -4,7 +4,7 @@ This brief defines prompts for the first OS Hub and Hardware Hub cover images. I
 
 ## Shared Direction
 
-Use generated raster covers for high-level hub identity and chapter openings. Use Mermaid or hand-authored diagrams for precise technical structure. Covers should feel like refined technical publishing, not generic AI art.
+Use generated raster covers for high-level hub identity and chapter openings. Use Mermaid or hand-authored diagrams for precise technical structure. Covers should feel like refined technical publishing, not generic AI art. The active hub covers are PNG assets under `hubs/assets/covers/`; do not use SVG placeholders for hub covers.
 
 Avoid:
 
@@ -21,6 +21,8 @@ Prefer:
 
 ## OS Hub Total Cover
 
+Current asset: `hubs/assets/covers/os-hub-cover.png`
+
 ```text
 Use case: scientific-educational
 Asset type: knowledge hub cover
@@ -34,6 +36,8 @@ Constraints: no text, no logos, no glowing brain, no neon, no purple-blue gradie
 ```
 
 ## Hardware Hub Total Cover
+
+Current asset: `hubs/assets/covers/hardware-hub-cover.png`
 
 ```text
 Use case: scientific-educational

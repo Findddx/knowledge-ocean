@@ -4,9 +4,9 @@
 
 我希望它不只是个人笔记，而是一个可以持续共建的知识海洋：如果这些内容能帮到同样在学习 AI systems、OS、硬件或工程基础的人，欢迎一起补充资料、修正错误、扩展案例、完善实验，让它逐渐成为更有参考价值的开放知识库。
 
-![OS Hub cover](hubs/assets/covers/os-hub-cover.svg)
+![OS Hub cover](hubs/assets/covers/os-hub-cover.png)
 
-![Hardware Hub cover](hubs/assets/covers/hardware-hub-cover.svg)
+![Hardware Hub cover](hubs/assets/covers/hardware-hub-cover.png)
 
 ## 当前内容
 

@@ -39,6 +39,44 @@
 
 ## 3. Inserted Images
 
+## generated-os-hub-cover
+
+- Local file: `hubs/assets/covers/os-hub-cover.png`
+- Original title: OS Hub generated cover
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: OS Hub / total cover
+- Intended use: cover
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Prompt specified restrained editorial technical illustration with graphite, warm off-white, muted teal, copper and amber accents; no neon, no purple-blue gradient, no text.
+
+## generated-hardware-hub-cover
+
+- Local file: `hubs/assets/covers/hardware-hub-cover.png`
+- Original title: Hardware Hub generated cover
+- Original URL: n/a
+- Source type: AI-generated raster image
+- Creator / copyright holder: generated for this repository with the built-in image generation tool
+- License / terms: repository-owned generated asset; no third-party source material used
+- Required attribution text: n/a
+- Generation date: 2026-04-25
+- Last license check: n/a
+- Intended hub / chapter: Hardware Hub / total cover
+- Intended use: cover
+- Cropping / edits: copied from generated output without edit
+- Trademark / endorsement notes: no logos, brands, people, or readable text intended
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Prompt specified an abstract non-branded server-board topology with graphite, warm white, brushed steel, muted teal, copper and amber accents; no neon, no fake model numbers, no text.
+
 ## wikimedia-pci-express-slot
 
 - Local file: `hubs/assets/images/hardware/12_pcie_cxl_interconnect/wikimedia-pci-express-slot.png`
