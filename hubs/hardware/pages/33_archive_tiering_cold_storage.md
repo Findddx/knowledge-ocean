@@ -62,6 +62,16 @@ flowchart LR
 - 备份软件对象后端归档：老恢复点转入对象归档层，必须确认元数据、索引和恢复目录仍在线。
 - 本地冷存储或离线介质：低速磁盘池、备份一体机、离线盘柜或磁带，关键差异是拿回来的时间和恢复链完整性。
 
+主流对象归档语义对照：
+
+| 平台 | 冷/归档层关键语义 | 恢复提醒 |
+| --- | --- | --- |
+| AWS S3 Glacier Flexible Retrieval / Deep Archive | Flexible Retrieval 和 Deep Archive 是归档类，访问前需要 restore 临时副本 | restore 请求、等待时间、临时副本保留天数要写进 runbook |
+| Azure Blob Archive | archive tier 是 offline tier，读取前必须 rehydrate 到 hot/cool/cold | 标准优先级可能小时级，高优先级成本更高且仍需排队 |
+| Google Cloud Storage Coldline / Archive | Coldline 90 天、Archive 365 天最小存储周期，取回和操作成本更高 | 生命周期转层和 early deletion 成本要与保留策略一起评审 |
+
+这张表不要替代价格页，作用是提醒：归档层首先改变恢复路径，其次才是改变单 GB 价格。
+
 设计归档架构时最该问的十个问题：
 
 1. 这份数据的真实恢复时限是多少，分钟、小时还是天？
@@ -157,3 +167,4 @@ flowchart LR
 - Azure Blob rehydration from archive tier: https://learn.microsoft.com/en-us/azure/storage/blobs/archive-rehydrate-overview
 - Azure Blob lifecycle management policy structure: https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-policy-structure
 - Google Cloud Storage Object Lifecycle Management: https://cloud.google.com/storage/docs/lifecycle
+- Google Cloud Storage storage classes: https://cloud.google.com/storage/docs/storage-classes

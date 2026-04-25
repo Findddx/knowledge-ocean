@@ -1,6 +1,6 @@
 # Image Attribution and Source Candidates
 
-本文档用于记录 OS Hub 与 Hardware Hub 后续插图的来源、许可、适用章节和使用限制。当前不下载图片，只建立候选清单和归因模板。
+本文档用于记录 OS Hub 与 Hardware Hub 插图的来源、许可、适用章节和使用限制。所有实际插入或准备插入的图片都应保留原始页面、作者、许可和下载日期。
 
 ## 1. Attribution Template
 
@@ -76,6 +76,82 @@
 - Redistribution risk: low, subject to attribution and ShareAlike
 - Approval status: inserted
 - Notes: SVG line illustration of an M.2 SSD. If modified, derivative should remain under CC BY-SA compatible terms.
+
+## wikimedia-pentium-iii-die
+
+- Local file: `hubs/assets/images/hardware/09_cpu_architecture/wikimedia-pentium-iii-die.jpg`
+- Original title: `File:Intel Pentium III Coppermine die.jpg`
+- Original URL: <https://commons.wikimedia.org/wiki/File:Intel_Pentium_III_Coppermine_die.jpg>
+- Source type: Wikimedia Commons
+- Creator / copyright holder: Lp at Italian Wikipedia
+- License / terms: Public domain
+- Required attribution text: Attribution not required, but source retained for traceability.
+- Download date: 2026-04-25
+- Last license check: 2026-04-25
+- Intended hub / chapter: Hardware Hub / `09_cpu_architecture`
+- Intended use: inline hardware photo
+- Cropping / edits: none
+- Trademark / endorsement notes: historical Intel product image; no endorsement implied.
+- Redistribution risk: low
+- Approval status: inserted
+- Notes: Die-side photo for explaining CPU package, die, cache and interconnect intuition.
+
+## wikimedia-nvidia-h100-geekerwan-027
+
+- Local file: `hubs/assets/images/hardware/13_gpu_accelerator_platform/wikimedia-nvidia-h100-geekerwan-027.png`
+- Original title: `File:NVIDIA H100 (极客湾Geekerwan) 027.png`
+- Original URL: <https://commons.wikimedia.org/wiki/File:NVIDIA_H100_(%E6%9E%81%E5%AE%A2%E6%B9%BEGeekerwan)_027.png>
+- Source type: Wikimedia Commons
+- Creator / copyright holder: 极客湾Geekerwan
+- License / terms: Creative Commons Attribution 3.0
+- Required attribution text: NVIDIA H100 image by 极客湾Geekerwan, licensed under CC BY 3.0, via Wikimedia Commons.
+- Download date: 2026-04-25
+- Last license check: 2026-04-25
+- Intended hub / chapter: Hardware Hub / `13_gpu_accelerator_platform`
+- Intended use: inline hardware photo
+- Cropping / edits: downloaded Wikimedia-generated 1920px derivative; no further edits.
+- Trademark / endorsement notes: NVIDIA product/trademark visible; educational use only, no endorsement implied.
+- Redistribution risk: low, subject to attribution
+- Approval status: inserted
+- Notes: Modern GPU accelerator visual for connecting HBM, package, board and system-level topology.
+
+## wikimedia-3com-etherlink-nic
+
+- Local file: `hubs/assets/images/hardware/15_network_rdma/wikimedia-3com-etherlink-nic.jpg`
+- Original title: `File:3Com-Etherlink-Network-Interface-Card-01.jpg`
+- Original URL: <https://commons.wikimedia.org/wiki/File:3Com-Etherlink-Network-Interface-Card-01.jpg>
+- Source type: Wikimedia Commons
+- Creator / copyright holder: CEphoto, Uwe Aranas
+- License / terms: Creative Commons Attribution-ShareAlike 3.0
+- Required attribution text: 3Com Etherlink Network Interface Card image by CEphoto, Uwe Aranas, licensed under CC BY-SA 3.0, via Wikimedia Commons.
+- Download date: 2026-04-25
+- Last license check: 2026-04-25
+- Intended hub / chapter: Hardware Hub / `15_network_rdma`
+- Intended use: inline hardware photo
+- Cropping / edits: downloaded Wikimedia-generated 1280px derivative; no further edits.
+- Trademark / endorsement notes: historical 3Com product/trademark visible; educational use only, no endorsement implied.
+- Redistribution risk: low, subject to attribution and ShareAlike
+- Approval status: inserted
+- Notes: Historical NIC photo used to explain that modern SmartNIC/DPU still follows the same core shape: host interface, controller, memory/firmware and network ports.
+
+## wikimedia-hdd-actuator-arm
+
+- Local file: `hubs/assets/images/hardware/18_storage_hardware/wikimedia-hdd-actuator-arm.jpg`
+- Original title: `File:Actuator arm assembly of a hard disk drive.jpg`
+- Original URL: <https://commons.wikimedia.org/wiki/File:Actuator_arm_assembly_of_a_hard_disk_drive.jpg>
+- Source type: Wikimedia Commons
+- Creator / copyright holder: Mk2010
+- License / terms: Creative Commons Attribution 4.0
+- Required attribution text: Actuator arm assembly of a hard disk drive image by Mk2010, licensed under CC BY 4.0, via Wikimedia Commons.
+- Download date: 2026-04-25
+- Last license check: 2026-04-25
+- Intended hub / chapter: Hardware Hub / `18_storage_hardware`
+- Intended use: inline hardware photo
+- Cropping / edits: downloaded Wikimedia-generated 1280px derivative; no further edits.
+- Trademark / endorsement notes: none
+- Redistribution risk: low, subject to attribution
+- Approval status: inserted
+- Notes: HDD actuator and head assembly visual for explaining why HDD latency, seek, vibration and rebuild behavior differ from SSD/NVMe.
 
 ## 4. First-Batch Hardware Image Source Candidates
 

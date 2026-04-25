@@ -77,6 +77,32 @@ flowchart TD
 3. 副本不易被访问：离线、逻辑隔离、不同凭据域或专用备份域降低横向移动风险。
 4. 副本可恢复：在隔离环境定期验证 availability、integrity 和业务可用性。
 
+勒索攻击路径与控制点：
+
+```mermaid
+flowchart LR
+  A[Initial access] --> B[Privilege escalation]
+  B --> C[Backup console access]
+  C --> D[Delete or shorten retention]
+  B --> E[KMS key disable/delete]
+  B --> F[Encrypt production data]
+  D --> G[Recovery fails]
+  E --> G
+  F --> H[Restore from immutable copy]
+  I[Vault Lock / Object Lock] -.blocks.-> D
+  J[Key separation / approval] -.blocks.-> E
+  K[Offline or logically air-gapped copy] -.limits.-> C
+  L[Clean restore test] -.validates.-> H
+```
+
+落地检查清单：
+
+- 生产管理员是否无法直接删除、解锁或缩短关键恢复点保留期。
+- KMS key 的禁用、计划删除、策略变更是否独立审批并告警。
+- 至少一份关键副本是否跨账号、跨组织或离线保存。
+- 不可变策略是否有 min/max retention、grace time 和容量评审。
+- 最近一次恢复验证是否从不可变或隔离副本开始，而不是从普通在线副本开始。
+
 AWS Backup 的当前能力补充：
 
 - `logically air-gapped vault` 是带额外安全特性的专用 vault，支持跨账号共享、AWS RAM 和 Multi-party approval。
@@ -168,3 +194,4 @@ AWS Backup 的当前能力补充：
 - AWS Backup Multi-party approval: https://docs.aws.amazon.com/aws-backup/latest/devguide/multipartyapproval.html
 - Azure Immutable Vault for Azure Backup: https://learn.microsoft.com/en-us/azure/backup/backup-azure-immutable-vault-concept
 - Azure immutable storage for Blob Storage: https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-storage-overview
+- Google Cloud Storage Object Retention Lock: https://cloud.google.com/storage/docs/object-lock

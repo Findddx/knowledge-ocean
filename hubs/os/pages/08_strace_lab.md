@@ -39,6 +39,28 @@
 - `-e trace=%network`：只看网络相关 syscall。
 - `-e trace=%process`：只看进程生命周期相关 syscall。
 
+### 读 trace 的四步
+
+```mermaid
+flowchart TD
+  A[拿到 trace] --> B{有没有 -1 ERRNO?}
+  B -- 有 --> C[按 errno 定位路径/权限/网络/资源边界]
+  B -- 没有 --> D{有没有长耗时 syscall?}
+  D -- 有 --> E[按 syscall 类型接 perf/eBPF/日志]
+  D -- 没有 --> F{shell、service、容器输出是否不同?}
+  F -- 是 --> G[对比 namespace、cgroup、env、cwd、uid/gid]
+  F -- 否 --> H[收窄到应用日志或 CPU 热点]
+```
+
+常见过滤器可以先把噪声降下来：
+
+| 目标 | 命令片段 | 读法 |
+| --- | --- | --- |
+| 只看失败调用 | `strace -Z ...` 或 `-e status=failed` | 快速找 `ENOENT`、`EACCES`、`EPERM` |
+| 解码 fd 指向 | `strace -yy ...` | 看 fd 背后的路径、socket、设备 |
+| 追 PID namespace 差异 | `strace --decode-pids=pidns ...` | 宿主机和容器 PID 视图不一致时有用 |
+| 只看某个路径 | `strace -P /some/path ...` | 验证程序是否真的访问该路径 |
+
 ## 最小实验
 
 ### 实验 1：比较三个程序
@@ -78,6 +100,21 @@ strace -e trace=%file ls /etc >/dev/null
 strace -e trace=%memory python3 -c 'print("memory")'
 strace -e trace=%network curl -I https://example.com >/dev/null
 ```
+
+### 实验 4：最小权限/路径排查剧本
+
+```bash
+mkdir -p /tmp/os-strace-lab
+chmod 000 /tmp/os-strace-lab
+strace -f -Z -yy -e trace=%file python3 - <<'PY'
+from pathlib import Path
+Path('/tmp/os-strace-lab/x').write_text('x')
+PY
+chmod 700 /tmp/os-strace-lab
+rmdir /tmp/os-strace-lab
+```
+
+先确认失败 syscall 和 errno，再看 fd/path 解码。真实服务里把 `/tmp/os-strace-lab/x` 换成应用日志里的路径；如果 shell 成功而 service 失败，再接第 11 章的 `systemctl show` 对比 `User=`, `WorkingDirectory=`, `PrivateTmp=` 和 `ReadWritePaths=`。
 
 ## 排障线索
 

@@ -51,6 +51,16 @@
 - 如果数据库数据卷、日志卷、配置卷不是同一时间点，恢复出来可能每个卷都“没坏”，但业务整体不可用。
 - 多卷 consistency group 或应用级检查点可以降低这种跨卷错位风险，但会增加协调成本。
 
+一致性级别可以这样选：
+
+| 负载 | 最低可接受副本 | 更稳妥做法 | 恢复验证重点 |
+| --- | --- | --- | --- |
+| 静态文件 / 内容分发 | 文件系统一致性 | 快照后校验 manifest / hash | 文件数量、hash、权限 |
+| 虚拟机 | crash-consistent | guest freeze / agent 协调 | OS 启动、文件系统检查、服务启动 |
+| 单库数据库 | 应用一致性或 PITR | 原生备份 + WAL/binlog 归档 | 数据库一致性、关键查询、停止点 |
+| 多卷数据库 | group-consistent | 数据卷/日志卷同一检查点 | 数据卷和日志卷时间线一致 |
+| 业务系统 | 应用级恢复编排 | 身份、网络、密钥、数据库、应用一起演练 | 业务 owner 验收 |
+
 ### RPO、RTO、MTD
 
 - NIST SP 800-34 把 RPO 定义为 outage 后数据必须恢复到的时间点，回答“最多能丢多久的数据”。
@@ -160,6 +170,7 @@ flowchart TD
 ## 延伸阅读
 
 - NIST SP 800-34 Rev. 1: https://nvlpubs.nist.gov/nistpubs/legacy/sp/nistspecialpublication800-34r1.pdf
+- SNIA Data Protection Best Practices: https://www.snia.org/educational-library/data-protection-best-practices-2025-0
 - Ceph RBD Snapshots: https://docs.ceph.com/en/latest/rbd/rbd-snapshot/
 - CephFS Snapshots: https://docs.ceph.com/en/latest/cephfs/snapshots/
 - OpenZFS `zfs-snapshot`: https://openzfs.github.io/openzfs-docs/man/v2.3/8/zfs-snapshot.8.html

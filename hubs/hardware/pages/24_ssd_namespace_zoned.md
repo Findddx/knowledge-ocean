@@ -80,6 +80,14 @@ flowchart TD
 - 多 namespace、格式、容量切分、隔离、控制器共享与管理操作，都会依赖这一层抽象。
 - 只把它当成“另一个块设备名字”，后面做管理和故障定位会越来越乱。
 
+| 对象 | 由谁创建/管理 | 删除或格式化的风险 |
+| --- | --- | --- |
+| NVMe subsystem | 设备/阵列/target 侧 | 影响多个 controller 或 namespace |
+| Controller | PCIe 或 fabric 连接语义 | 可能改变可见命名空间集合 |
+| Namespace | NVMe 管理命令或厂商工具 | 可能直接影响 `/dev/nvmeXnY` 对应的数据空间 |
+| Partition | 主机分区表工具 | 通常只影响该 namespace 上的分区表 |
+| Filesystem | 主机文件系统工具 | 影响文件/目录语义，不改变 NVMe namespace 本身 |
+
 ## Zoned Storage：为什么顺序写约束重新回来了
 
 ### Zoned 的核心思想

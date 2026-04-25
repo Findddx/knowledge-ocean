@@ -51,6 +51,17 @@ flowchart TD
 | dirty page | 已修改但尚未写回存储的页 |
 | reclaim | 内核回收可回收页面以满足新分配 |
 
+### 容器内存视角
+
+| 类型 | 常见来源 | 排障证据 |
+| --- | --- | --- |
+| 匿名页 | heap、栈、JIT、KV cache | `/proc/<pid>/status`, cgroup `memory.stat` 的 `anon` |
+| 文件页 | page cache、mmap 权重文件 | `memory.stat` 的 `file`, major/minor faults |
+| tmpfs/shmem | `/dev/shm`, `emptyDir.medium: Memory` | `df -h /dev/shm`, `memory.stat` 的 `shmem` |
+| 内核内存 | socket buffer、页表、slab | `memory.stat`, `/proc/meminfo` |
+
+容器 OOM 时，`free -h` 看到的是宿主机或 namespace 视图的一部分，不一定等于容器可用内存。优先把进程 RSS、cgroup `memory.current`、`memory.events` 和 `memory.stat` 放到同一张证据表里。
+
 ## 最小实验
 
 ### 实验 1：观察 `mmap`
@@ -85,6 +96,30 @@ grep -E 'VmSize|VmRSS|RssAnon|RssFile|VmSwap' /proc/$pid/status
 wait $pid
 ```
 
+### 实验 4：区分匿名页、文件页和 tmpfs
+
+```bash
+cg=$(sed -n 's/^0:://p' /proc/self/cgroup)
+grep -E '^(anon|file|shmem) ' "/sys/fs/cgroup$cg/memory.stat"
+
+python3 - <<'PY' &
+from pathlib import Path
+import time
+a = bytearray(64 * 1024 * 1024)
+p = Path('/dev/shm/os-mm-lab.bin')
+p.write_bytes(b'x' * 16 * 1024 * 1024)
+time.sleep(60)
+p.unlink()
+PY
+pid=$!
+sleep 2
+
+grep -E '^(anon|file|shmem) ' "/sys/fs/cgroup$cg/memory.stat"
+wait "$pid"
+```
+
+这不是压力测试，而是训练读数：匿名分配、tmpfs 写入和文件页缓存会落在不同计数里。没有 cgroup v2 的系统可以退回 `/proc/meminfo` 和进程 `/proc/<pid>/status` 做近似观察。
+
 ## 排障线索
 
 - 内存占用高：先分匿名页、文件页、slab、tmpfs，不要把 page cache 直接当泄漏。
@@ -107,3 +142,5 @@ wait $pid
 - https://docs.kernel.org/admin-guide/mm/concepts.html
 - https://docs.kernel.org/mm/page_tables.html
 - https://docs.kernel.org/filesystems/caching/index.html
+- https://docs.kernel.org/admin-guide/cgroup-v2.html
+- https://kubernetes.io/docs/concepts/storage/volumes/#emptydir

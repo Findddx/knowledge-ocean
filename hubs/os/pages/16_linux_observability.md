@@ -35,6 +35,25 @@
 | 容器差异 | namespace/cgroup/mount/env 对比 |
 | NCCL hang | `NCCL_DEBUG + nvidia-smi topo + /dev/shm + network` |
 
+### 从低扰动到高分辨率
+
+```mermaid
+flowchart LR
+  A[现象和时间窗] --> B[日志/状态: journalctl, ps, /proc, /sys]
+  B --> C[边界行为: strace, systemctl show, namespace/cgroup]
+  C --> D[资源面: pidstat, iostat, perf stat, PSI]
+  D --> E[热点/路径: perf, ftrace]
+  E --> F[eBPF: bpftrace / bcc / libbpf CO-RE]
+```
+
+| 工具层 | 适合回答 | 风险/前提 |
+| --- | --- | --- |
+| `strace` | 程序请求了哪些内核服务 | ptrace 有扰动，CPU 热点不适合单靠它 |
+| `perf` | CPU 时间、采样热点、调度延迟 | 受 `perf_event_paranoid` 和符号质量影响 |
+| ftrace | 内核函数/事件路径 | 需要熟悉 tracefs，注意输出量 |
+| `bpftrace` | 临时按事件聚合 | 需要内核 BPF 能力和 root/CAP_BPF/CAP_PERFMON |
+| libbpf/CO-RE | 可分发的长期观测程序 | 开发成本更高，需要 BTF/内核兼容性设计 |
+
 ## 最小实验
 
 ### 实验 1：低成本系统快照
@@ -70,6 +89,14 @@ perf top
 sudo bpftrace -e 'tracepoint:syscalls:sys_enter_openat { @[comm] = count(); }'
 ```
 
+### 实验 4：用 eBPF 观察 cgroup OOM 线索
+
+```bash
+sudo bpftrace -e 'tracepoint:oom:oom_kill { printf("oom_kill pid=%d comm=%s\n", args->pid, str(args->comm)); }'
+```
+
+同时在另一个窗口读目标 cgroup 的 `memory.events`。eBPF 给你“内核事件发生了”，cgroup 文件给你“哪个工作负载的计数变化了”，两者合起来比只看应用日志可靠。
+
 ## 排障线索
 
 - 慢：先判断 CPU、IO、网络、锁等待、资源配额、远端依赖，避免直接改参数。
@@ -92,5 +119,6 @@ sudo bpftrace -e 'tracepoint:syscalls:sys_enter_openat { @[comm] = count(); }'
 - https://docs.kernel.org/bpf/
 - https://docs.kernel.org/admin-guide/perf/index.html
 - https://man7.org/linux/man-pages/man1/perf.1.html
+- https://man7.org/linux/man-pages/man7/capabilities.7.html
+- https://bpftrace.org/docs/release_024/language
 - https://www.freedesktop.org/software/systemd/man/latest/journalctl.html
-

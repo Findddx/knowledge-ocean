@@ -47,7 +47,26 @@ UEFI/ACPI 是主机启动和 OS 枚举的桥；BMC/Redfish 是带外管理、资
 
 - BMC 是独立管理控制器，不是主机 OS 上的后台进程。
 - Redfish 使用 RESTful 接口和 schema-based data model，覆盖服务器、可组合基础设施和大规模云环境。
-- DMTF Redfish 2025.3 发布中，Redfish Specification 为 DSP0266 1.23.0，Data Model 为 DSP0268 2025.3；这说明现代管理面持续扩展到固件更新、遥测、CXL、液冷和电力设备。
+- DMTF Redfish 2025.4 发布中，Redfish Specification 为 DSP0266 1.23.1，Data Model 为 DSP0268 2025.4；这说明现代管理面持续扩展到固件更新、遥测、CXL、液冷和电力设备。
+
+Redfish 不是“另一个 Web UI”，它是一棵资源树：
+
+```mermaid
+flowchart TD
+  Root["/redfish/v1/"]
+  Root --> Systems["/Systems/"]
+  Root --> Chassis["/Chassis/"]
+  Root --> Managers["/Managers/"]
+  Root --> Update["/UpdateService/"]
+  Root --> Telemetry["/TelemetryService/"]
+  Systems --> Boot[Boot / SecureBoot / Processors / Memory / PCIeDevices]
+  Chassis --> Sensors[Power / Thermal / Sensors / Drives]
+  Managers --> BMC[BMC firmware / network / log services]
+  Update --> FW[Firmware inventory + update actions]
+  Telemetry --> Metrics[Metric reports + triggers]
+```
+
+排障时可以用这棵树对齐三类证据：OS 枚举、BMC inventory、厂商支持包。
 
 ### OpenBMC 与厂商管理面
 
@@ -86,9 +105,32 @@ journalctl -k | rg -i 'efi|acpi|dmi|firmware|microcode'
 
 ```bash
 curl -k https://<bmc-host>/redfish/v1/
+curl -k https://<bmc-host>/redfish/v1/Systems/
+curl -k https://<bmc-host>/redfish/v1/Chassis/
+curl -k https://<bmc-host>/redfish/v1/UpdateService/
 ```
 
 目标：确认 Redfish 服务是否可达，并继续检查 Systems、Chassis、Managers、UpdateService 和 TelemetryService。
+
+### 实验 5：固件基线核对
+
+```bash
+curl -k https://<bmc-host>/redfish/v1/UpdateService/FirmwareInventory/
+journalctl -k | rg -i 'microcode|firmware|bios|bmc|nvram|uefi'
+sudo dmidecode -t bios -t baseboard
+```
+
+目标：把 BIOS、BMC、NIC、HBA/RAID、NVMe、GPU、retimer 等固件版本放进同一张表。硬件异常发生后，先确认是不是“混固件基线”造成的行为差异。
+
+### 实验 6：启动失败的最短路径
+
+| 步骤 | 看什么 | 结论 |
+| --- | --- | --- |
+| BMC power/event | 上电、PSU、温度、SEL | 确认不是电热或硬件保护 |
+| POST/console | 串口、KVM、POST code | 确认卡在固件、Option ROM 还是 bootloader |
+| UEFI boot entries | `efibootmgr -v` | 确认启动项、设备路径、Secure Boot |
+| Linux kernel log | `journalctl -k` | 确认 ACPI/PCIe/driver 枚举 |
+| Redfish inventory | Systems/Chassis/UpdateService | 确认 BMC 侧是否也看不到设备 |
 
 ## 采购/运维判断
 
@@ -119,5 +161,6 @@ curl -k https://<bmc-host>/redfish/v1/
 - UEFI Specification 2.11: https://uefi.org/specs/UEFI/2.11/
 - ACPI Specification 6.6: https://uefi.org/specs/ACPI/6.6/
 - DMTF Redfish standards: https://www.dmtf.org/standards/redfish
+- Redfish Specification DSP0266 published versions: https://www.dmtf.org/dsp/DSP0266
 - OpenBMC: https://openbmc.org/
 - Linux PCIe AER HOWTO: https://www.kernel.org/doc/html/latest/PCI/pcieaer-howto.html

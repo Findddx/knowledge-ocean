@@ -47,6 +47,19 @@ flowchart TD
 | cgroup | 管理能力强 | 依赖 systemd delegation 和内核支持 |
 | 风险 | 权限集中 | 默认爆炸半径更小但约束更多 |
 
+### OCI 到 Linux 原语
+
+| OCI 配置面 | Linux 原语 | 排障入口 |
+| --- | --- | --- |
+| `process.args`, `env`, `cwd` | `execve` 参数和环境 | `strace`, `docker inspect`, runtime config |
+| `linux.namespaces` | pid/mount/net/ipc/uts/user/cgroup namespace | `lsns`, `/proc/<pid>/ns` |
+| `linux.resources` | cgroup v2 控制器 | `/proc/<pid>/cgroup`, `/sys/fs/cgroup` |
+| `linux.capabilities` | capability 集合 | `capsh`, `/proc/<pid>/status` |
+| `linux.seccomp` / LSM | syscall 和强制访问控制 | audit log, `dmesg`, Kubernetes security context |
+| mounts | rootfs、overlayfs、bind mount、tmpfs | `findmnt`, `stat -f`, `/proc/<pid>/mountinfo` |
+
+容器排障时，先拿到容器 init 的宿主机 PID，再沿着 `/proc/<pid>` 读 namespace、mount、cgroup、status。比只看容器内 shell 更稳定，因为容器内看到的是被裁剪后的视图。
+
 ## 最小实验
 
 ### 实验 1：比较 namespace
@@ -72,6 +85,19 @@ grep "$USER" /etc/subuid /etc/subgid
 docker info | grep -i rootless
 ```
 
+### 实验 4：把容器 PID 接回宿主证据
+
+```bash
+cid=$(docker run -d --rm ubuntu:24.04 sleep 300)
+pid=$(docker inspect -f '{{.State.Pid}}' "$cid")
+sudo lsns -p "$pid"
+sudo cat "/proc/$pid/cgroup"
+sudo sed -n '1,40p' "/proc/$pid/mountinfo"
+docker stop "$cid"
+```
+
+rootless 下如果 `State.Pid` 或宿主权限受限，仍可以用同样的字段思路：先确认 user namespace 映射，再看 runtime 是否有 cgroup delegation、设备节点和网络路径权限。
+
 ## 排障线索
 
 - 容器内 root 不是宿主机 root：先读 `uid_map` / `gid_map`。
@@ -92,8 +118,9 @@ docker info | grep -i rootless
 
 - https://github.com/opencontainers/runtime-spec
 - https://rootlesscontaine.rs/
+- https://rootlesscontaine.rs/getting-started/common/subuid/
 - https://docs.docker.com/engine/security/rootless/
+- https://kubernetes.io/docs/concepts/security/linux-kernel-security-constraints/
 - https://docs.kernel.org/admin-guide/namespaces/index.html
 - https://docs.kernel.org/admin-guide/cgroup-v2.html
 - https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/
-

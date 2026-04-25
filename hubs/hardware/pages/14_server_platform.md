@@ -24,6 +24,26 @@
 | GPU | 插槽宽度、供电线、风道、散热、拓扑 |
 | 管理 | BMC、Redfish、固件升级、资产清单 |
 
+可以把平台看成“资源从 CPU 出发，经过机械/电气结构落到可维护部件”的路径：
+
+```mermaid
+flowchart LR
+  CPU[CPU socket] --> MEM[DIMM slots / memory channels]
+  CPU --> IO[PCIe/CXL root ports]
+  IO --> RISER[Riser / cables / retimers]
+  RISER --> GPU[GPU slots]
+  RISER --> NIC[NIC / DPU]
+  RISER --> BP[NVMe / SAS backplane]
+  BP --> DRIVES[Drives / EDSFF / U.2 / U.3]
+  PSU[PSU / power shelf] --> BOARD[Baseboard]
+  COOL[Fans / cold plates / airflow] --> BOARD
+  BOARD --> CPU
+  BMC[BMC / Redfish] --> BOARD
+  BMC --> INV[Inventory / sensors / firmware]
+```
+
+所以“同一型号服务器”也不一定等价。不同 riser、背板、电源、风扇、液冷套件和固件许可，会让同一个机箱变成完全不同的平台。
+
 ## 硬件/系统机制
 
 ### Socket 与 NUMA
@@ -49,6 +69,17 @@
 - 机箱不是外壳，它决定前后维护、风道、riser 方向、GPU 支撑、电缆路径和盘位密度。
 - PSU、风扇墙、导风罩、液冷接口和 BMC 传感器共同决定持续性能。
 - BMC/Redfish 是平台生命周期管理入口：固件、资产、传感器、事件和远程控制都依赖它。
+
+### 平台 SKU 的真实差异
+
+| 看似相同 | 实际要核对 |
+| --- | --- |
+| 同一 CPU | BIOS 支持、功耗档、内存速率、UPI/IF 配置 |
+| 同一机箱 | riser 组合、背板协议、GPU 支架、电源线束 |
+| 同样 x16 slot | lane 来源、是否共享、是否支持目标 Gen、散热空间 |
+| 同样盘位数量 | SATA/SAS/NVMe/tri-mode、直连或 HBA/RAID、热插拔能力 |
+| 同样 BMC | Redfish 覆盖范围、授权、固件升级和日志导出能力 |
+| 同样满配功耗 | 输入电压、PSU 冗余、风扇策略、机架供电和散热 |
 
 ## 观察/实验方法
 
@@ -82,6 +113,19 @@ journalctl -k | rg -i 'dmi|acpi|firmware|pcie|thermal'
 
 目标：识别平台初始化、PCIe 链路、热管理和固件相关线索。
 
+### 实验 4：收货/上架前检查清单
+
+| 项目 | 证据 |
+| --- | --- |
+| 部件与订单一致 | BMC inventory、物理标签、FRU/part number |
+| 固件基线一致 | BIOS、BMC、NIC、HBA/RAID、NVMe、GPU、retimer |
+| I/O 拓扑正确 | `lspci -tv`、slot/riser 图、NUMA node |
+| 内存通道均衡 | `dmidecode -t memory`、平台内存填充表 |
+| 电热可持续 | PSU 冗余、风扇/液冷、BMC power/thermal |
+| 可维护性 | 前后维护路径、线缆标识、备件、远程 KVM/SOL |
+
+目标：把采购参数变成可验收证据。平台问题越早在收货阶段发现，后续集群问题越少。
+
 ## 采购/运维判断
 
 1. 平台是为通用算力、存储节点、网络节点还是 GPU/AI 节点设计？
@@ -113,4 +157,6 @@ journalctl -k | rg -i 'dmi|acpi|firmware|pcie|thermal'
 - AMD EPYC 9005 Processor Architecture Overview: https://docs.amd.com/v/u/en-US/58462_amd-epyc-9005-tg-architecture-overview
 - NVIDIA MGX: https://www.nvidia.com/en-gb/data-center/products/mgx/
 - OCP Rack and Power: https://www.opencompute.org/projects/rack-and-power
+- OCP Hardware Management specs and designs: https://www.opencompute.org/wiki/Hardware_Management/SpecsAndDesigns
+- OCP Open Systems for AI whitepaper: https://www.opencompute.org/documents/ocp-open-systems-for-ai-whitepaper-v1-0-0-final-pdf
 - DMTF Redfish standards: https://www.dmtf.org/standards/redfish

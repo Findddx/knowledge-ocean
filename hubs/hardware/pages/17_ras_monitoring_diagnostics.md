@@ -27,6 +27,17 @@ flowchart TD
   G --> H[Postmortem / baseline update]
 ```
 
+一条可用的 RAS 证据链要同时满足四件事：
+
+| 证据 | 问题 | 常见来源 |
+| --- | --- | --- |
+| 时间线 | 先发生什么，后发生什么 | `journalctl`、BMC SEL、Redfish EventService |
+| 拓扑 | 错误属于哪个 socket、slot、lane、DIMM、FRU | `lspci -tv`、`dmidecode`、BMC inventory |
+| 计数 | 是一次性事件还是持续增长 | AER/EDAC/NVMe/NIC/GPU counters |
+| 变更 | 近期是否换件、升级固件、改 BIOS、改布线 | 固件基线、维护记录、配置管理 |
+
+没有拓扑和计数，correctable error 只能制造噪声；有了拓扑和趋势，correctable error 才能变成预测性维护线索。
+
 ## 硬件/系统机制
 
 ### 硬件检测层
@@ -78,7 +89,9 @@ ras-mc-ctl --summary 2>/dev/null || true
 ```bash
 nvme list 2>/dev/null || true
 nvme smart-log /dev/nvme0 2>/dev/null || true
+nvme error-log /dev/nvme0 2>/dev/null || true
 ethtool -S <iface> 2>/dev/null | rg -i 'err|drop|timeout|crc|reset' || true
+nvidia-smi -q 2>/dev/null | rg -i 'ecc|retired|remapped|xid|power|temperature' || true
 ```
 
 目标：把存储、网络和链路 counters 纳入同一故障判断。
@@ -94,6 +107,27 @@ ethtool -S <iface> 2>/dev/null | rg -i 'err|drop|timeout|crc|reset' || true
 - Power and thermal telemetry。
 
 目标：确认主机 OS 与带外管理面是否给出一致结论。
+
+### 实验 5：构建最小故障时间线
+
+```bash
+journalctl -k --since "2 hours ago" | rg -i 'mce|edac|aer|pcie|nvme|nvrm|xid|thermal|power|reset|fatal|corrected'
+last -x | head
+uptime
+```
+
+目标：先确认故障是否伴随重启、驱动 reset、温度/功耗事件或链路错误。时间线能避免把结果当成原因。
+
+### 实验 6：把错误映射到可替换部件
+
+| 错误类型 | 第一证据 | 第二证据 | 可能动作 |
+| --- | --- | --- | --- |
+| 内存 correctable 增长 | EDAC/MCA | DIMM slot、温度、patrol scrub | 观察窗口、换 DIMM、查通道 |
+| PCIe correctable 增长 | AER CESta | `LnkSta`、slot/riser/retimer | 重插/换线/降速验证/固件 |
+| NVMe media/error log | NVMe SMART/error-log | 背板、温度、固件 | 备份、换盘、升级固件 |
+| GPU Xid/ECC | `nvidia-smi`、kernel log | PCIe/NVLink、温度、功耗 | 隔离 GPU、查驱动固件、换件 |
+| NIC drops/resets | `ethtool -S`、RDMA counters | switch counters、PFC/ECN | 调队列/拥塞、换模块/线缆 |
+| Power/thermal throttle | BMC/Redfish sensors | PSU/fan/CDU/airflow | 降载、修复散热、调整 power cap |
 
 ## 采购/运维判断
 
@@ -112,9 +146,21 @@ ethtool -S <iface> 2>/dev/null | rg -i 'err|drop|timeout|crc|reset' || true
 - 日志很多就等于可诊断：没有时间线、拓扑和部件位置，日志难以指导动作。
 - 监控只看 CPU/内存/磁盘利用率：RAS 更关心错误事件、纠错计数、链路状态、温度、功耗和恢复动作。
 
+### 告警处置模板
+
+每个硬件告警至少要落到这五个字段：
+
+| 字段 | 示例 |
+| --- | --- |
+| 影响范围 | 单设备、单 socket、单节点、单 rack、单 fabric |
+| 严重度 | correctable、degraded、uncorrectable、fatal |
+| 证据 | OS 日志、BMC SEL、Redfish、设备 counters、拓扑图 |
+| 动作 | 观察、迁移、隔离、固件升级、换件、厂商 case |
+| 复盘 | 是否更新固件基线、监控阈值、备件和验收测试 |
+
 ## 前沿趋势
 
-- Redfish 2025.3 继续强化资源模型、schema、事件、固件和遥测生态，适合作为跨厂商管理面基线。
+- Redfish 2025.4 继续强化资源模型、schema、事件、固件和遥测生态，适合作为跨厂商管理面基线。
 - CXL、GPU、DPU、液冷和电源分配设备会把 RAS 范围从传统服务器扩展到 composable/rack-scale 基础设施。
 - Linux AER、EDAC、CXL、hwmon 与厂商 telemetry 的关联会成为自动化诊断重点。
 - 故障诊断会从“人工看日志”转向“事件关联 + 拓扑归因 + 固件基线 + 变更审计”。
@@ -125,5 +171,6 @@ ethtool -S <iface> 2>/dev/null | rg -i 'err|drop|timeout|crc|reset' || true
 - Linux EDAC documentation: https://www.kernel.org/doc/html/latest/driver-api/edac.html
 - Linux hwmon documentation: https://docs.kernel.org/hwmon/index.html
 - DMTF Redfish standards: https://www.dmtf.org/standards/redfish
+- Redfish Specification DSP0266 published versions: https://www.dmtf.org/dsp/DSP0266
 - OpenBMC: https://openbmc.org/
 - Dell iDRAC RESTful APIs / Redfish: https://www.dell.com/support/manuals/en-us/idrac9-lifecycle-controller-v6.x-series/smog_26.0/idrac-restful-apis-redfish-standards-based

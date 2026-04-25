@@ -21,6 +21,22 @@
 | 机架 | kW/rack、PDU、供电相位、液冷接口、承重 | 机架无法满配或无法持续满载 |
 | 设施 | UPS、配电、CDU、冷却水、消防、维护通道 | 部署不可持续，扩容被设施卡住 |
 
+电热规划至少要从单机算到机架：
+
+```mermaid
+flowchart LR
+  Server[Server load] --> PSU[PSU efficiency + redundancy]
+  PSU --> PDU[Rack PDU / bus bar]
+  PDU --> Facility[UPS / switchgear]
+  Server --> Heat[Heat load]
+  Heat --> Air[Airflow / fan wall]
+  Heat --> Liquid[Cold plate / manifold / CDU]
+  Air --> Room[Room cooling]
+  Liquid --> FacilityWater[Facility water loop]
+```
+
+粗算时可以先用保守模型：`机架 IT 功耗 = 单机峰值功耗 x 节点数 x 同时满载系数`。再把 PSU 效率、冗余掉电场景、PDU 额定值、液冷/风冷容量和设施余量逐项扣掉。
+
 ## 硬件/系统机制
 
 ### 单机供电
@@ -28,6 +44,14 @@
 - PSU 额定功率不等于可持续可用功率，还要看冗余模式、效率曲线、输入电压和瞬态峰值。
 - GPU、CPU、NIC、SSD、风扇和 BMC 都参与功耗预算。
 - 掉一个 PSU 后能否满载，是生产平台必须验证的问题。
+
+| 场景 | 必须验证 |
+| --- | --- |
+| N+N 冗余 | 掉一路输入或一组 PSU 后是否仍能承载目标负载 |
+| N+1 冗余 | 单 PSU 故障时是否降频、限功耗或触发保护 |
+| 高压输入 | 目标机房电压下 PSU 是否能输出标称功率 |
+| GPU 瞬态 | 训练/推理峰值是否触发 OCP/OPP 或节点重启 |
+| 固件功耗策略 | BIOS/BMC power cap 是否影响性能和温度 |
 
 ### 风冷
 
@@ -80,6 +104,14 @@ journalctl -k | rg -i 'thermal|throttle|power|fan|hwmon'
 - Event log。
 - Firmware inventory。
 
+示例入口：
+
+```bash
+curl -k https://<bmc-host>/redfish/v1/Chassis/
+curl -k https://<bmc-host>/redfish/v1/TelemetryService/
+curl -k https://<bmc-host>/redfish/v1/Systems/
+```
+
 目标：确认故障时是否能独立于主机 OS 观察电热状态。
 
 ### 实验 4：做机架部署检查表
@@ -87,6 +119,19 @@ journalctl -k | rg -i 'thermal|throttle|power|fan|hwmon'
 记录单机功耗、机架总功耗预算、PDU、供电相位、网络走线、冷却方式、维护空间和设施容量。
 
 目标：把“能上架”变成可核查条件。
+
+### 实验 5：液冷上线检查表
+
+| 项目 | 需要记录 |
+| --- | --- |
+| 冷却环路 | CDU、manifold、供回水温度、流量、压差 |
+| 节点侧 | cold plate 覆盖部件、快接头、泄漏检测、维护空间 |
+| 责任边界 | 服务器厂商、液冷厂商、设施团队的接口和保修 |
+| 遥测 | BMC/Redfish 是否暴露流量、温度、泄漏、泵/阀状态 |
+| 维护 | 排液、隔离、替换、复测、应急处置流程 |
+| 验证 | 上架前压力/泄漏测试，满载热测试，掉泵/掉风扇场景 |
+
+目标：液冷不是“接上水管”。它需要可观测、可隔离、可维护、可回滚的工程流程。
 
 ## 采购/运维判断
 
@@ -115,6 +160,8 @@ journalctl -k | rg -i 'thermal|throttle|power|fan|hwmon'
 ## 延伸阅读
 
 - OCP Cooling Environments: https://www.opencompute.org/projects/cooling-environments
+- OCP Hardware Management for Liquid Cooling: https://www.opencompute.org/wiki/Cooling_Environments/Hardware_Management_for_Liquid_Cooling
+- OCP Open Data Center for AI Strategic Initiative: https://www.opencompute.org/index.php/blog/realizing-the-open-data-center-ecosystem-vision
 - OCP Rack and Power: https://www.opencompute.org/projects/rack-and-power
 - NVIDIA GB200 NVL72: https://www.nvidia.com/en-us/data-center/gb200-nvl72/
 - NVIDIA MGX: https://www.nvidia.com/en-gb/data-center/products/mgx/

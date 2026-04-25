@@ -79,6 +79,38 @@ flowchart TD
 - blk-mq 的意义，是把请求队列更贴近 CPU 与硬件队列，减少单锁和串行瓶颈。
 - 这也是为什么今天你看 NVMe、PCIe SSD 或高并发块设备，不能再用老式机械盘时代的直觉去想性能。
 
+### NVMe queue 到 blk-mq 的路径
+
+Linux kernel 文档把 blk-mq 描述成让高速设备通过并行队列同时提交 I/O 的机制；NVMe 驱动会把硬件队列类型映射到具体硬件队列。真正排障时，可以按下面这条链路问问题：
+
+```mermaid
+flowchart LR
+  A[Application / io_uring / read-write] --> B[VFS or direct I/O]
+  B --> C[Filesystem builds bio]
+  C --> D[blk-mq software queues]
+  D --> E[hardware dispatch queue / tags]
+  E --> F[NVMe submission queue]
+  F --> G[Controller executes command]
+  G --> H[NVMe completion queue]
+  H --> I[IRQ / polling completion]
+  I --> J[Application observes latency]
+```
+
+| 观察点 | 常见信号 | 排障含义 |
+| --- | --- | --- |
+| 软件队列 | CPU、NUMA、`/sys/block/*/mq` | 请求是否被集中到少数 CPU 或队列 |
+| tag / nr_requests | `nr_requests`、队列深度 | 是否因为可用 tag 不足而排队 |
+| 调度器 | `none`、`mq-deadline`、`kyber`、`bfq` | 调度器是否与设备和负载匹配 |
+| completion | 中断、polling、尾延迟 | 完成路径是否成为抖动来源 |
+| 上层语义 | page cache、direct I/O、fsync | 测到的是设备延迟还是应用提交语义 |
+
+最小检查清单：
+
+- 明确测试对象：裸 namespace、dm/LVM、md、文件系统文件，还是网络块设备。
+- 明确 I/O 模式：buffered、direct、sync、async、`io_uring`、队列深度和线程数。
+- 记录 NUMA 与 PCIe 本地性：NVMe 所在 socket、应用线程所在 CPU、网卡/存储卡所在 root complex。
+- 同时记录吞吐、平均延迟和 P99/P999；NVMe 场景里尾延迟比顺序带宽更能暴露队列问题。
+
 ## md、dm、LVM、文件系统不要混
 
 ### md
@@ -255,6 +287,7 @@ fio --name=randread --filename=/tmp/fio.test --size=1G --rw=randread --bs=4k --i
 - blk-mq: https://docs.kernel.org/block/blk-mq.html
 - Device Mapper: https://docs.kernel.org/admin-guide/device-mapper/index.html
 - RAID arrays (md): https://docs.kernel.org/6.5/admin-guide/md.html
+- Linux NVMe Documentation: https://docs.kernel.org/nvme/index.html
 - ext4 General Information: https://docs.kernel.org/admin-guide/ext4.html
 - XFS Filesystem: https://docs.kernel.org/admin-guide/xfs.html
 - OpenZFS Documentation: https://openzfs.github.io/openzfs-docs/index.html

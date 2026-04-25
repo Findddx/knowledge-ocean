@@ -103,7 +103,7 @@ journalctl -k | rg -i 'mce|edac|aer|pcie|nvme|firmware|acpi'
 
 - CPU 从“唯一计算中心”转向“平台资源编排器”，与 GPU、DPU、CXL memory 和高速 NIC 协同。
 - 内存从本地 DDR 扩展到 MRDIMM、HBM、CXL attached memory 和更远端的内存池化。
-- PCIe 7.0 已进入规范发布阶段，CXL 3.x 把 memory pooling、switching 和 fabric management 推到平台层。
+- PCIe 7.0 已在 2025 年发布到 128 GT/s；CXL 4.0 则把 CXL 路线推进到 PCIe 7.0 速率、bundled ports 和更强 memory RAS，memory pooling、switching 和 fabric management 会继续进入平台层。
 - AI 服务器从单机 GPU 参数转向 NVLink domain、液冷 rack、800G 网络、机架级供电和运维自动化。
 - Redfish、OpenBMC、OCP 和 Linux kernel telemetry 让服务器管理更 API 化、标准化和可观测。
 
@@ -112,7 +112,7 @@ journalctl -k | rg -i 'mce|edac|aer|pcie|nvme|firmware|acpi'
 - Intel Xeon 6 Product Brief: https://www.intel.com/content/www/us/en/products/docs/xeon-6-product-brief.html
 - AMD EPYC 9005 Processor Architecture Overview: https://docs.amd.com/v/u/en-US/58462_amd-epyc-9005-tg-architecture-overview
 - NVIDIA MGX: https://www.nvidia.com/en-gb/data-center/products/mgx/
-- PCI-SIG PCIe 7.0 resources: https://pcisig.com/specifications/pcie-70-specification-version-03-now-available-members
-- CXL Consortium CXL 3.2 release: https://computeexpresslink.org/news/cxl-consortium-announces-compute-express-link-3-2-specification-release/
+- PCI-SIG PCIe 7.0 base specification: https://pcisig.com/PCIExpress/Spec/Base/_7.0
+- CXL Consortium CXL 4.0 specification: https://computeexpresslink.org/cxl-specification
 - DMTF Redfish standards: https://www.dmtf.org/standards/redfish
 - Linux kernel CXL documentation: https://cxl.docs.kernel.org/

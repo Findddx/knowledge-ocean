@@ -81,6 +81,30 @@ flowchart LR
 
 Ceph RBD mirroring 给出的典型提示很有代表性：failover 时应先停止 primary 访问，再 demote 当前 primary、promote 新 primary，最后恢复 alternate cluster 访问；官方也提醒 RBD 只提供有序 failover 工具，完整流程需要外部机制协调。
 
+网络韧性不是附属项，它决定 DR 能不能被真正触发：
+
+```mermaid
+stateDiagram-v2
+  [*] --> Normal
+  Normal --> SuspectedFailure: health / quorum / site signal
+  SuspectedFailure --> FencePrimary: decision + approval
+  FencePrimary --> PromoteSecondary: storage / database role change
+  PromoteSecondary --> ShiftTraffic: DNS / GSLB / route / VIP
+  ShiftTraffic --> ValidateService: synthetic + business checks
+  ValidateService --> RunOnSecondary
+  RunOnSecondary --> ResyncPrimary: primary repaired
+  ResyncPrimary --> FailbackWindow
+  FailbackWindow --> Normal
+```
+
+DR 网络检查清单：
+
+- 是否有独立的管理入口可以在主站点身份、VPN 或堡垒机失效时执行恢复。
+- DNS TTL、GSLB 健康检查、BGP/路由切换和客户端缓存是否纳入 RTO。
+- primary 封写依赖什么机制：fencing、quorum、存储 demote、数据库只读，还是人工断链。
+- secondary 的证书、KMS、镜像仓库、时间同步、监控出口和日志出口是否已经预置。
+- 回切时如何避免客户端、队列、缓存和异步任务继续写旧主。
+
 ## 常见故障
 
 ### 异地有副本，但没有接管路径

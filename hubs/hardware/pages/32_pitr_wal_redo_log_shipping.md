@@ -91,6 +91,18 @@ flowchart LR
 6. 做数据库一致性、行数、关键业务查询和应用启动验证。
 7. 决定是导出修复数据、替换生产库，还是继续做差异合并。
 
+把 PostgreSQL 和 MySQL 放在同一张操作语义表里：
+
+| 步骤 | PostgreSQL | MySQL |
+| --- | --- | --- |
+| 建基线 | `pg_basebackup` 或备份工具 | 全量物理/逻辑备份 |
+| 连续日志 | `archive_mode` + `archive_command` 保存 WAL | 开启并保留 binary log |
+| 停止点 | time、LSN、transaction ID、named restore point | binlog time 或 position |
+| 回放工具 | `restore_command` + recovery target | `mysqlbinlog` 选择事件范围后重放 |
+| 验证 | timeline、关键查询、应用启动 | server UUID、binlog 范围、关键查询 |
+
+关键变更前可以把“停止点证据”做得更明确：记录变更窗口、数据库时间、应用版本、DDL/DML 工单号，并在支持的系统中创建命名 restore point。这样事故时不是在日志里猜“误删前一分钟”，而是在证据链里选择目标点。
+
 ## 常见故障
 
 ### 只做全量备份，不保连续日志
@@ -168,6 +180,7 @@ flowchart LR
 ## 延伸阅读
 
 - PostgreSQL Continuous Archiving and Point-in-Time Recovery (PITR): https://www.postgresql.org/docs/current/continuous-archiving.html
+- PostgreSQL `pg_basebackup`: https://www.postgresql.org/docs/current/app-pgbasebackup.html
 - MySQL 8.4 Point-in-Time Recovery Using Binary Log: https://dev.mysql.com/doc/refman/8.4/en/point-in-time-recovery-binlog.html
 - MySQL 8.4 The Relay Log: https://dev.mysql.com/doc/refman/8.4/en/replica-logs-relaylog.html
 - Oracle Data Guard Concepts and Administration: https://docs.oracle.com/en/database/oracle/oracle-database/26/sbydb/introduction-to-oracle-data-guard-concepts.html

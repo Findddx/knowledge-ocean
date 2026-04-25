@@ -52,6 +52,16 @@ flowchart TD
 - 它应具备独立账号、独立网络、独立密钥访问边界、独立日志、最小管理员集合和只读候选副本。
 - 目标是先做恶意文件扫描、完整性检查、应用启动验证、身份关系检查和依赖版本核对，再决定是否回灌。
 
+clean room 的最小隔离面：
+
+| 隔离面 | 要求 | 失败信号 |
+| --- | --- | --- |
+| 身份 | 不复用生产管理员会话和主身份源的高权限角色 | 生产域失信后仍能控制 clean room |
+| 网络 | 默认不连生产东西向网络，只开放受控出入口 | 恢复出的主机能直接访问生产网段 |
+| 密钥 | 只授予恢复所需解密/读取权限，操作全审计 | KMS 管理权限和数据恢复权限混在一起 |
+| 日志 | 扫描、校验、审批、回灌动作独立留存 | 生产日志丢失时无法证明恢复过程 |
+| 数据 | 候选副本优先只读挂载或隔离复制 | 验证过程修改了唯一候选副本 |
+
 ### Last Known Good Copy
 
 - cyber recovery 不能默认拿最近副本，因为最近副本可能已经包含恶意软件、错误配置或被污染的身份关系。
@@ -69,6 +79,22 @@ flowchart TD
 5. 做恶意扫描、哈希/校验、应用一致性和业务查询验证。
 6. 用 last-known-good 评分表选择恢复点。
 7. 经审批后回灌到生产或重建环境，并保留完整证据。
+
+```mermaid
+flowchart TD
+  A[Incident timeline] --> B[Freeze vault sync]
+  B --> C[List candidate restore points]
+  C --> D[Restore candidate into clean room]
+  D --> E[Malware scan]
+  D --> F[Hash / database consistency check]
+  D --> G[Application smoke test]
+  E --> H{Clean enough?}
+  F --> H
+  G --> H
+  H -- no --> C
+  H -- yes --> I[Approval: last known good copy]
+  I --> J[Controlled production rebuild or restore]
+```
 
 last-known-good 评分表：
 
@@ -161,5 +187,6 @@ last-known-good 评分表：
 - AWS Backup logically air-gapped vault: https://docs.aws.amazon.com/aws-backup/latest/devguide/logicallyairgappedvault.html
 - AWS Backup primary backups to logically air-gapped vaults: https://docs.aws.amazon.com/aws-backup/latest/devguide/lag-vault-primary-backup.html
 - AWS Backup Multi-party approval: https://docs.aws.amazon.com/aws-backup/latest/devguide/multipartyapproval.html
+- NIST SP 800-184 Guide for Cybersecurity Event Recovery: https://csrc.nist.gov/publications/detail/sp/800-184/final
 - CISA ESXiArgs recovery guidance: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-039a
 - CISA StopRansomware Guide: https://www.cisa.gov/stopransomware/ransomware-guide

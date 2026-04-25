@@ -149,6 +149,18 @@
 
 - 真正有价值的通常不是某一个绝对值，而是 `增长速度`、`是否突然跳变`、`不同视图是否互相矛盾`。
 
+一份可长期复用的基线表至少要能把“设备本体”和“槽位/控制器/业务”串起来：
+
+| 字段 | 来源 | 用途 |
+| --- | --- | --- |
+| 序列号 / WWN / NGUID | `smartctl`、`nvme id-ns`、Redfish | 换盘、追批次、跨视图关联 |
+| slot / enclosure / bay | 控制器、SES、Redfish | 现场定位和远程亮灯 |
+| firmware / model | 设备、BMC inventory | 固件缺陷、兼容矩阵和升级计划 |
+| 温度与节流事件 | NVMe log、SMART、BMC thermal | 识别散热和风道问题 |
+| media / data integrity errors | NVMe error-log、SMART raw value | 识别介质退化和不可恢复错误 |
+| `percentage used` / 写入量 | NVMe smart-log、厂商工具 | 验证耐久预算是否超速消耗 |
+| kernel reset / timeout | `journalctl -k` | 判断 OS I/O 路径是否已经感知异常 |
+
 ## 服务器落地时最该问的十个问题
 
 1. 当前健康状态来自哪一层，设备、控制器还是带外？

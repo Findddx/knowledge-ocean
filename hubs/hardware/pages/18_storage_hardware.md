@@ -37,6 +37,21 @@
 | 协议 | 命令怎么说 | ATA、SCSI、NVMe | NVMe 通常跑在 PCIe 上，但不是 PCIe 本身 |
 | 控制 | 谁管理设备 | HBA、RAID/PERC、NVMe controller、expander | OS 看到的可能只是 virtual disk |
 
+把本章和后续章节连起来看，存储不是停在“盘”这一层：
+
+```mermaid
+flowchart LR
+  A[盘位 / 背板 / 电源 / 散热] --> B[HBA / RAID / NVMe controller]
+  B --> C[SATA / SAS / PCIe / NVMe]
+  C --> D[Linux block layer / blk-mq]
+  D --> E[md / dm / LVM / filesystem]
+  E --> F[Block / File / Object service]
+  F --> G[Snapshot / Replication / Backup]
+  G --> H[DR / PITR / Cyber recovery]
+```
+
+这条路线的价值是：每一层都会改变故障语义。控制器 RAID 改变 OS 可见性，blk-mq 改变排队与尾延迟，文件/对象服务改变一致性和元数据责任，备份与容灾再把“在线可用”扩展成“事故后可恢复”。
+
 ## 先把存储路径拆开
 
 ### 物理层
@@ -63,6 +78,10 @@
 ## HDD 与 SSD 的真正边界
 
 ### HDD：容量、成本和重建窗口
+
+![HDD 磁头与执行臂](../../assets/images/hardware/18_storage_hardware/wikimedia-hdd-actuator-arm.jpg)
+
+> 图：HDD 的机械执行臂和磁头决定了它在随机访问、震动、寻道和重建窗口上与 SSD/NVMe 有本质差异。图片来源与许可见 [image_attribution.md](../../assets/image_attribution.md)。
 
 - 企业 HDD 的价值常常在于每 TB 成本和单盘容量，而不是延迟。
 - Seagate Exos 企业盘当前公开页已经把 24TB 到 32TB 作为数据中心容量主线，这说明 HDD 在归档、对象存储和大规模冷温数据里仍然重要。

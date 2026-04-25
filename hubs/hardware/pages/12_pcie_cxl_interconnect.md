@@ -33,6 +33,36 @@ PCIe 和 CXL 是现代服务器里 CPU、GPU、NIC、NVMe、DPU、FPGA 和内存
 | retimer | 高速信号恢复 | 高速代际下线缆、背板和 riser 是否合格 |
 | CXL | PCIe 物理层上的一致性/内存协议 | 内存扩展、cache coherent device、fabric 管理 |
 
+典型 AI/存储节点的 I/O 图应画出上游和共享关系：
+
+```mermaid
+flowchart TB
+  subgraph CPU0[CPU socket 0 / Root complex 0]
+    RP0[Root ports]
+    SW0[PCIe switch]
+    GPU0[GPU 0]
+    NIC0[RDMA NIC]
+    NVME0[NVMe backplane]
+    CXL0[CXL Type-3 memory]
+    RP0 --> SW0
+    SW0 --> GPU0
+    SW0 --> NIC0
+    RP0 --> NVME0
+    RP0 -. CXL.io + CXL.mem .-> CXL0
+  end
+  subgraph CPU1[CPU socket 1 / Root complex 1]
+    RP1[Root ports]
+    GPU1[GPU 1]
+    NIC1[RDMA NIC]
+    RP1 --> GPU1
+    RP1 --> NIC1
+  end
+  CPU0 <-->|UPI / Infinity Fabric| CPU1
+  GPU0 -. remote path if talking to NIC1 .-> NIC1
+```
+
+读这张图时，先找三件事：是否跨 socket、是否过 switch 共享上游、实际链路是否低于设备能力。
+
 ## 硬件/系统机制
 
 ### PCIe 基础路径
@@ -40,6 +70,14 @@ PCIe 和 CXL 是现代服务器里 CPU、GPU、NIC、NVMe、DPU、FPGA 和内存
 - PCIe 是分层协议，包含物理层、数据链路层和事务层。
 - 每个 endpoint 通过 root port、switch 或 bridge 出现在 PCI 拓扑中。
 - Gen 代际决定每 lane 速率，lane 数决定宽度；实际 `LnkSta` 低于 `LnkCap` 时，要查插槽、线缆、retimer、BIOS 和设备能力。
+
+| 观察项 | 正常问题 | 异常线索 |
+| --- | --- | --- |
+| `LnkCap` | 设备/插槽最大能力是多少 | 规格书 x16，但 Cap 只有 x8 |
+| `LnkSta` | 实际训练到多少 GT/s、几条 lane | 降代、降宽、反复 retrain |
+| `NUMA node` | endpoint 靠近哪个 socket | GPU 与 NIC 分属不同 socket |
+| `AER` | 是否有 corrected/uncorrected 计数 | correctable 持续增长、fatal 事件 |
+| switch 上游 | 下游设备共享多少上行带宽 | 多块 NVMe/GPU 过度超卖 |
 
 ### 拓扑与本地性
 
@@ -72,7 +110,7 @@ lspci -tv
 ### 实验 2：查看链路能力和实际状态
 
 ```bash
-sudo lspci -vv | rg -n 'LnkCap|LnkSta|NUMA|AER|UESta|CESta'
+sudo lspci -D -vv | rg -n '^[0-9a-f:.]+|LnkCap|LnkSta|NUMA|AER|UESta|CESta'
 ```
 
 目标：确认实际速率、lane 宽度、AER 状态和 NUMA 归属。
@@ -90,9 +128,26 @@ find /sys/bus/pci/devices -maxdepth 2 -name numa_node -print -exec cat {} \;
 ```bash
 lspci | rg -i 'cxl|memory'
 ls /sys/bus/cxl/devices 2>/dev/null
+cxl list -vv 2>/dev/null || true
 ```
 
 目标：确认平台是否暴露 CXL 设备和 Linux CXL bus 对象。
+
+### 实验 5：把设备按 root port 分组
+
+```bash
+lspci -tv
+for dev in /sys/bus/pci/devices/*; do
+  [ -f "$dev/current_link_speed" ] || continue
+  printf "%s %s %s numa=%s\n" \
+    "$(basename "$dev")" \
+    "$(cat "$dev/current_link_speed" 2>/dev/null)" \
+    "$(cat "$dev/current_link_width" 2>/dev/null)" \
+    "$(cat "$dev/numa_node" 2>/dev/null)"
+done
+```
+
+目标：把“设备很多”变成“哪些设备共享哪条路径”。实际排障时，把这份输出和主板 riser/backplane 图贴在一起看。
 
 ## 采购/运维判断
 
@@ -112,15 +167,16 @@ ls /sys/bus/cxl/devices 2>/dev/null
 
 ## 前沿趋势
 
-- PCI-SIG 已在 2025 年向成员发布 PCIe 7.0，目标速率 128 GT/s，并把光互连和更长 reach 纳入方向。
-- CXL Consortium 已发布 CXL 3.2，行业重点继续转向 memory pooling、switching、fabric 和更强的管理模型。
+- PCI-SIG 已在 2025 年发布 PCIe 7.0，目标速率 128 GT/s；进入 Gen6/Gen7 后，PAM4、FEC、retimer、线缆和背板质量会更直接地影响平台稳定性。
+- CXL Consortium 已发布 CXL 4.0，速率路线跟进 PCIe 7.0，新增 bundled ports 等能力；从 CXL 3.x 开始形成的 memory pooling、switching、fabric 和管理模型会继续向平台级资源编排演进。
 - 高速平台越来越依赖 retimer、线缆、背板和散热，信号完整性已经成为系统工程问题。
 - Linux CXL 支持仍在活跃发展，生产落地要同时看内核、固件、ndctl/cxl 工具和厂商支持矩阵。
 
 ## 延伸阅读
 
-- PCI-SIG PCIe 7.0 resources: https://pcisig.com/specifications/pcie-70-specification-version-03-now-available-members
-- CXL Consortium CXL 3.2 release: https://computeexpresslink.org/news/cxl-consortium-announces-compute-express-link-3-2-specification-release/
+- PCI-SIG PCIe 7.0 base specification: https://pcisig.com/PCIExpress/Spec/Base/_7.0
+- CXL Consortium CXL 4.0 specification: https://computeexpresslink.org/cxl-specification
+- CXL 4.0 release announcement PDF: https://computeexpresslink.org/wp-content/uploads/2025/11/CXL_4.0-Specification-Release_FINAL_Website-Copy.pdf
 - Linux CXL documentation: https://cxl.docs.kernel.org/
 - Linux CXL memory devices: https://www.kernel.org/doc/html/next/driver-api/cxl/memory-devices.html
 - Linux PCIe AER HOWTO: https://www.kernel.org/doc/html/latest/PCI/pcieaer-howto.html

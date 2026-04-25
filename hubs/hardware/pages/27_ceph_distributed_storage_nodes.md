@@ -148,6 +148,22 @@ flowchart TD
 
 不要只把它们当产品名，而要看到它们共用的底层对象与放置逻辑。
 
+### 从 Ceph 到 NVMe/TCP gateway 的跨章连接
+
+Ceph 的 NVMe-oF gateway 把 RBD image 通过 NVMe/TCP 暴露给没有原生 Ceph 客户端的主机。它不是把 OSD 变成普通 NVMe 盘，而是在 `host NVMe driver -> gateway -> RBD -> RADOS -> OSD` 之间加了一层协议出口。
+
+```mermaid
+flowchart LR
+  A[Linux host: nvme discover/connect] --> B[NVMe/TCP gateway group]
+  B --> C[Subsystem / namespace]
+  C --> D[RBD image]
+  D --> E[RADOS objects]
+  E --> F[OSD set across CRUSH failure domains]
+  F --> G[Replication or EC recovery]
+```
+
+Ceph 官方 NVMe-oF gateway 要求高可用部署时至少两个 gateway，且放在不同 Ceph 节点上。设计时要把 gateway 当成协议出口和故障域对象，而不是把它当成无状态“转发端口”。
+
 ## 服务器落地时最该问的十个问题
 
 1. 你要提供 block、file、object 中的哪几类服务？
@@ -260,3 +276,6 @@ ceph pg stat
 - Ceph Erasure Code: https://docs.ceph.com/docs/master/rados/operations/erasure-code/
 - Ceph Pools: https://docs.ceph.com/en/latest/rados/operations/pools/
 - Ceph File System Creation: https://docs.ceph.com/en/latest/cephfs/createfs/
+- Ceph NVMe-oF Gateway: https://docs.ceph.com/en/tentacle/rbd/nvmeof-overview/
+- Ceph NVMe-oF Gateway Requirements: https://docs.ceph.com/en/tentacle/rbd/nvmeof-requirements/
+- Ceph v20.2.1 Tentacle release: https://ceph.io/en/news/blog/2026/v20-2-1-tentacle-released/

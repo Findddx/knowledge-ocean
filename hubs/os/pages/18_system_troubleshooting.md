@@ -52,6 +52,42 @@
 | 容器才失败 | namespace/cgroup/mount/user mapping 对比 |
 | 多卡通信异常 | `/dev/shm`, `NCCL_DEBUG`, topology, network |
 
+### 总决策树
+
+```mermaid
+flowchart TD
+  A[用户现象] --> B{能否稳定复现?}
+  B -- 否 --> C[先补时间窗、日志、指标、采样]
+  B -- 是 --> D{只在 service/container/某用户下出现?}
+  D -- 是 --> E[对比 env/cwd/user/namespace/cgroup/mount]
+  D -- 否 --> F{资源是否异常?}
+  F -- CPU --> G[cpu.stat, cpu.pressure, perf, 调度]
+  F -- 内存 --> H[memory.events, memory.stat, OOM 日志]
+  F -- IO --> I[strace, iostat, io.stat, VFS/mount]
+  F -- 网络 --> J[ss, route, DNS, connect trace]
+  F -- GPU --> K[/dev/shm, NCCL_DEBUG, topology, runtime]
+  E --> L[最小变更验证]
+  G --> L
+  H --> L
+  I --> L
+  J --> L
+  K --> L
+  L --> M[casebook: 证据、根因、修复、预防]
+```
+
+### 跨章节证据矩阵
+
+| 机制 | 最小证据 | 回看章节 |
+| --- | --- | --- |
+| syscall 行为 | `strace -f -ttT`, errno, fd/path | 08 |
+| cgroup 资源 | `/proc/<pid>/cgroup`, `cpu.stat`, `memory.events` | 09, 11 |
+| 隔离视图 | `lsns`, `/proc/<pid>/ns`, mountinfo | 10, 17 |
+| systemd 执行环境 | `systemctl show`, `journalctl -u` | 11 |
+| 共享内存/GPU 通信 | `/dev/shm`, NCCL 日志, topology | 12 |
+| 调度/CPU | `pidstat`, `perf`, `cpu.pressure` | 13, 16 |
+| 内存/page cache | `memory.stat`, `/proc/<pid>/status` | 14 |
+| VFS/IO | `findmnt`, `stat -f`, `iostat`, `io.stat` | 15 |
+
 ## 最小实验
 
 ### 实验 1：写一份基线
@@ -90,6 +126,19 @@ grep -E 'ENOENT|EACCES|EPERM|ETIMEDOUT|ECONNREFUSED|OOM|killed' /tmp/failure.tra
 - 以后如何预防：
 ```
 
+### 实验 4：15 分钟 runbook drill
+
+选一个低风险命令，故意制造一个失败，再按固定模板收敛：
+
+```bash
+systemd-run --user --unit=os-drill -p WorkingDirectory=/no/such/dir /bin/true
+systemctl --user status os-drill --no-pager
+journalctl --user -u os-drill -n 50 --no-pager
+systemctl --user show os-drill -p Result -p ExecMainStatus -p WorkingDirectory
+```
+
+目标不是记住这个错误，而是练习“现象 -> systemd 证据 -> 根因句子 -> 修复验证”。把 `/no/such/dir` 换成权限、cgroup、容器 mount 或 `/dev/shm` 案例，就是同一套方法。
+
 ## 排障线索
 
 - 没有现象定义就不要改配置。
@@ -113,4 +162,4 @@ grep -E 'ENOENT|EACCES|EPERM|ETIMEDOUT|ECONNREFUSED|OOM|killed' /tmp/failure.tra
 - https://man7.org/linux/man-pages/man1/strace.1.html
 - https://www.brendangregg.com/linuxperf.html
 - https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/
-
+- https://kubernetes.io/docs/tasks/debug/

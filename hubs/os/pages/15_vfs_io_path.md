@@ -51,6 +51,16 @@ flowchart TD
 
 direct IO 不等于一定更快。它把对齐、队列深度、缓存策略、回压处理责任更多交给上层。
 
+### IO 慢的分岔口
+
+| 证据 | 更像哪一层 | 下一步 |
+| --- | --- | --- |
+| `openat`/`statx` 很多且慢 | 路径解析、元数据、远程 FS | 看 dentry/inode、目录规模、NFS/对象存储网关 |
+| `read` 慢但第二次快 | page cache miss | 看存储延迟、readahead、缓存命中 |
+| `write` 快但 `fsync` 慢 | dirty page 回写 | 看 writeback、设备队列、journal |
+| `io.stat` 增长但吞吐低 | cgroup IO 限制或设备争用 | 查 `io.max`, `io.weight`, `iostat -xz` |
+| 只在容器慢 | overlayfs、bind mount、volume、mount propagation | 对比宿主和容器 `findmnt`, `stat -f` |
+
 ## 最小实验
 
 ### 实验 1：路径与句柄
@@ -83,6 +93,14 @@ stat -f /tmp
 
 在容器中重复观察，比较 overlayfs、bind mount、tmpfs、procfs 的差异。
 
+### 实验 4：识别现代异步 IO 入口
+
+```bash
+strace -f -e io_uring_setup,io_uring_enter,io_uring_register your_command_here
+```
+
+看到 `io_uring_setup` 说明程序可能用 shared submission/completion ring 和内核交换 IO 请求。它不绕过 VFS，也不自动绕过 page cache；排障仍要看文件系统、缓存、块层和 cgroup IO，只是 syscall 形态会从大量 `read`/`write` 变成 ring 提交与完成。
+
 ## 排障线索
 
 - `write` 返回成功不代表数据已经持久落盘；还要理解 dirty page、writeback、`fsync`。
@@ -103,7 +121,9 @@ stat -f /tmp
 - https://docs.kernel.org/filesystems/vfs.html
 - https://docs.kernel.org/filesystems/index.html
 - https://man7.org/linux/man-pages/man2/open.2.html
+- https://man7.org/linux/man-pages/man7/io_uring.7.html
+- https://docs.kernel.org/admin-guide/cgroup-v2.html
 - https://docs.kernel.org/filesystems/iomap/operations.html
+- https://docs.kernel.org/filesystems/overlayfs.html
 - https://docs.kernel.org/filesystems/ext4/
 - https://docs.kernel.org/filesystems/xfs.html
-

@@ -83,6 +83,18 @@ flowchart TD
 5. 审计留证：记录策略版本、操作人、时间、原因、工单和执行结果。
 6. 定期复核：容量成本、合规要求、过期清理和 legal hold 解除。
 
+控制模式对照：
+
+| 控制 | 粒度 | 到期方式 | 典型误用 |
+| --- | --- | --- | --- |
+| Object version retention | 对象版本 | retain-until time | 以为能阻止新版本写入 |
+| Legal hold | 对象版本或 blob | 人工解除 | 没有事件标签和解除流程 |
+| Vault Lock | 备份仓库/恢复点 | min/max retention | 锁定前未评审容量与恢复窗口 |
+| Bucket retention policy | 桶级对象集合 | 统一保留期 | 对细粒度数据分类不够灵活 |
+| Lifecycle delete | 对象集合 | 条件满足后删除 | 与 retention/hold 关系没验证 |
+
+删除治理的底线是：生命周期规则负责“何时清理”，retention/hold 负责“何时不能删”，审计负责“谁试图改过规则”。
+
 ## 常见故障
 
 ### 只看数据面，不看控制面
@@ -165,4 +177,5 @@ flowchart TD
 - Azure Blob immutable storage overview: https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-storage-overview
 - Azure configure immutability policies for blob versions: https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-policy-configure-version-scope
 - Google Cloud Storage Object Retention Lock: https://cloud.google.com/storage/docs/object-lock
+- Google Cloud Storage Bucket Lock: https://cloud.google.com/storage/docs/using-bucket-lock
 - Google Cloud Storage Object Lifecycle Management: https://cloud.google.com/storage/docs/lifecycle

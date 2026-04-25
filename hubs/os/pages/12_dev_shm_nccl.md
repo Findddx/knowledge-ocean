@@ -37,6 +37,27 @@ flowchart LR
 
 NCCL 新版本还要关注 cuMem host allocations。NCCL 文档说明 2.23 起引入相关路径，2.24 在满足 CUDA driver/runtime 和 NUMA 条件时会默认启用，2.26.5 起在失败时会回退。排障时不能只盯 `/dev/shm`，还要记录 CUDA、驱动、NCCL、NUMA 和容器 capability。
 
+### 通信异常决策树
+
+```mermaid
+flowchart TD
+  A[NCCL hang / timeout / 初始化失败] --> B{单机单卡正常?}
+  B -- 否 --> C[先查驱动、CUDA、容器 GPU 注入]
+  B -- 是 --> D{多进程或多卡才失败?}
+  D -- 是 --> E[查 /dev/shm、IPC namespace、NCCL 日志]
+  D -- 否 --> F[回到应用或数据加载路径]
+  E --> G{日志出现 shm 或 cuMem host allocation?}
+  G -- shm --> H[调大 --shm-size 或验证 --ipc=host]
+  G -- cuMem --> I[查 NUMA、CUDA driver/runtime、capability]
+  E --> J{跨节点才失败?}
+  J -- 是 --> K[查 NCCL_SOCKET_IFNAME、路由、IB/RoCE、CNI]
+  H --> L[用同一 workload 验证吞吐和错误率]
+  I --> L
+  K --> L
+```
+
+`--ipc=host` 适合作为归因实验，不适合直接当长期答案。长期方案要写清楚是需要更大的 tmpfs、共享 IPC namespace、NUMA/capability 修正，还是网络和拓扑修正。
+
 ## 最小实验
 
 ### 实验 1：检查宿主机共享内存
@@ -76,6 +97,22 @@ df -h /dev/shm
 NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=INIT,ENV,GRAPH your_command_here
 ```
 
+### 实验 4：复现容器 `/dev/shm` 不足
+
+```bash
+docker run --rm --shm-size=32m python:3.12-slim python - <<'PY'
+from multiprocessing import shared_memory
+block = shared_memory.SharedMemory(create=True, size=64 * 1024 * 1024)
+print(block.name)
+for i in range(0, len(block.buf), 4096):
+    block.buf[i] = 1
+block.close()
+block.unlink()
+PY
+```
+
+如果小 `--shm-size` 下失败、调大后成功，说明问题在共享内存边界。Kubernetes 里常用 `emptyDir.medium: Memory` 挂载内存型 tmpfs，但写入内容会计入写入容器的内存限制，不能只调 volume 而忽略 Pod memory limit。
+
 ## 排障线索
 
 - 日志出现 `/dev/shm/nccl-*` 或共享内存创建失败：先查 `/dev/shm` 大小、IPC namespace、容器 `--shm-size`。
@@ -98,4 +135,4 @@ NCCL_DEBUG=INFO NCCL_DEBUG_SUBSYS=INIT,ENV,GRAPH your_command_here
 - https://docs.docker.com/engine/containers/run/
 - https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html
 - https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/
-
+- https://kubernetes.io/docs/concepts/storage/volumes/#emptydir

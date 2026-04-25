@@ -44,6 +44,29 @@ flowchart TD
 | Linux kernel target | 集成稳定，易进入现有 Linux 运维体系 | 极致性能和定制能力有限 |
 | SPDK target | 用户态轮询、高并发、可定制 | 占核、hugepage、NUMA、隔离和调试成本 |
 
+一条 NVMe-oF I/O 可以按下面的路径理解：
+
+```mermaid
+sequenceDiagram
+  participant App as Host application
+  participant H as Host NVMe driver
+  participant F as TCP/RDMA fabric
+  participant T as Target listener
+  participant S as Subsystem ACL / auth
+  participant N as Namespace / bdev
+  App->>H: submit I/O to nvmeXnY
+  H->>F: NVMe capsule + data
+  F->>T: deliver to target port
+  T->>S: check host NQN / DH-HMAC-CHAP / TLS where used
+  S->>N: dispatch to namespace backend
+  N-->>S: completion
+  S-->>T: NVMe completion
+  T-->>H: completion over fabric
+  H-->>App: I/O complete
+```
+
+这里最容易遗漏的是：网络不只是“线通了”。多路径、ACL、认证、TLS、拥塞控制、MTU、队列深度、target 后端和 host timeout 都会进入同一条恢复路径。
+
 ## NVMe-oF：把 NVMe 队列语义从本地搬到网络上
 
 ### 它在做什么
@@ -163,6 +186,14 @@ flowchart TD
 - 如果业务只是通用服务器块存储，Linux kernel target 或传统 SAN/NAS 可能更稳、更容易交接。
 - 远端 NVMe 的采购不能只看 SSD，还要看 NIC、交换机、拥塞控制、MTU、CPU NUMA 和多路径策略。
 
+网络韧性检查清单：
+
+- 至少为关键路径设计双网卡、双交换机或独立故障域；不要让所有 target listener 共用一个交换故障点。
+- NVMe/TCP 要明确 VLAN/VRF、ACL、防火墙、TLS、host NQN 白名单和端口暴露边界。
+- NVMe/RDMA 要把 PFC/ECN、MTU、RoCE 版本、GID、NIC firmware、交换机缓冲和拥塞告警写进运维手册。
+- 主机侧要验证 multipath、ANA/路径状态、timeout、重连和应用重试策略，而不是只验证 `nvme connect` 成功。
+- SPDK target 要记录 hugepage、CPU pinning、NUMA、设备绑定和 JSON-RPC 管理面的恢复步骤。
+
 ## 常见误区
 
 ### 误区 1：NVMe-oF 就是更快版 iSCSI
@@ -253,4 +284,5 @@ cat /etc/nvme/hostnqn 2>/dev/null || true
 - NVMe 2.0 Fabrics and Multi-Domain Overview: https://nvmexpress.org/nvme-2-0-specifications-support-for-fabrics-and-multi-domain-subsystems/
 - SPDK Documentation: https://spdk.io/doc/
 - SPDK NVMe-oF Target: https://spdk.io/doc/nvmf.html
+- SPDK NVMe-oF Target Programming Guide: https://spdk.io/doc/nvmf_tgt_pg.html
 - Linux NVMe Documentation: https://docs.kernel.org/nvme/index.html
